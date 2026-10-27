@@ -110,7 +110,7 @@ def test_benchmark_cancellation(tmp_path: Path) -> None:
 
             workspace = Path(os.environ["GITHUB_WORKSPACE"])
             marker = workspace / "running-container"
-            if sys.argv[1] == "run":
+            if sys.argv[1] == "run" and "--name" in sys.argv:
                 name = sys.argv[sys.argv.index("--name") + 1]
                 marker.write_text(name, encoding="utf-8")
                 print(json.dumps({"pid": os.getpid()}), flush=True)
