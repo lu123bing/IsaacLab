@@ -111,7 +111,9 @@ class JointImpedanceController:
             # split input command
             dof_pos_command, stiffness = torch.tensor_split(command, 2, dim=-1)
             # format command
-            stiffness = stiffness.clip_(min=self.cfg.stiffness_limits[0], max=self.cfg.stiffness_limits[1])
+            # ``tensor_split`` returns views that alias ``command``, which the caller may pass expanded or
+            # with ``requires_grad``; clamp out of place so writing through the view cannot mutate or raise.
+            stiffness = torch.clamp(stiffness, min=self.cfg.stiffness_limits[0], max=self.cfg.stiffness_limits[1])
             # joint positions + stiffness
             self._dof_pos_target[:] = dof_pos_command
             self._p_gains[:] = stiffness
@@ -120,9 +122,9 @@ class JointImpedanceController:
             # split input command
             dof_pos_command, stiffness, damping_ratio = torch.tensor_split(command, 3, dim=-1)
             # format command
-            stiffness = stiffness.clip_(min=self.cfg.stiffness_limits[0], max=self.cfg.stiffness_limits[1])
-            damping_ratio = damping_ratio.clip_(
-                min=self.cfg.damping_ratio_limits[0], max=self.cfg.damping_ratio_limits[1]
+            stiffness = torch.clamp(stiffness, min=self.cfg.stiffness_limits[0], max=self.cfg.stiffness_limits[1])
+            damping_ratio = torch.clamp(
+                damping_ratio, min=self.cfg.damping_ratio_limits[0], max=self.cfg.damping_ratio_limits[1]
             )
             # joint positions + stiffness + damping
             self._dof_pos_target[:] = dof_pos_command
